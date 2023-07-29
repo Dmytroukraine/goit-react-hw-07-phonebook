@@ -1,2 +1,1 @@
-// filter-selectors.js
-export const getFilter = (store) => store.filter;
+export const selectFilter = (state) => state.filter;
