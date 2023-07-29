@@ -1,37 +1,43 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-axios.defaults.baseURL = 'https://63ebe5f3be929df00ca4038a.mockapi.io';
+axios.defaults.baseURL = 'https://mockapi.io/clone/64c55a58c853c26efadac246';
 
-// Асинхронний генератор екшену для отримання контактів
-export const fetchContacts = createAsyncThunk('contacts/fetchContacts', async () => {
-  try {
-    const response = await axios.get('/contacts');
-    return response.data;
-  } catch (error) {
-    throw new Error('Failed to fetch contacts');
+export const fetchContacts = createAsyncThunk(
+  'contacts/fetchAll',
+  async (_, thunkAPI) => {
+    try {
+      const response = await axios.get('/contacts');
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
   }
-});
+);
 
-// Асинхронний генератор екшену для додавання контакту
-export const addContact = createAsyncThunk('contacts/addContact', async (contact) => {
-  try {
-    const response = await axios.post('/contacts', contact);
-    return response.data;
-  } catch (error) {
-    throw new Error('Failed to add contact');
+export const addContact = createAsyncThunk(
+  'contacts/addContact',
+  async ({ name, phone }, thunkAPI) => {
+    try {
+      const response = await axios.post('/contacts', { name, phone });
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
   }
-});
+);
 
-// Асинхронний генератор екшену для видалення контакту
-export const deleteContact = createAsyncThunk('contacts/deleteContact', async (contactId) => {
-  try {
-    await axios.delete(`/contacts/${contactId}`);
-    return contactId;
-  } catch (error) {
-    throw new Error('Failed to delete contact');
+export const deleteContact = createAsyncThunk(
+  'contacts/deleteContact',
+  async (contactId, thunkAPI) => {
+    try {
+      await axios.delete(`/contacts/${contactId}`);
+      return contactId; // Return the contactId directly
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
   }
-});
+);
 
 const contactsSlice = createSlice({
   name: 'contacts',
@@ -39,13 +45,8 @@ const contactsSlice = createSlice({
     items: [],
     isLoading: false,
     error: null,
-    filter: '',
   },
-  reducers: {
-    setFilter: (state, action) => {
-      state.filter = action.payload;
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(fetchContacts.pending, (state) => {
@@ -54,11 +55,12 @@ const contactsSlice = createSlice({
       })
       .addCase(fetchContacts.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.error = null;
         state.items = action.payload;
       })
       .addCase(fetchContacts.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.error.message;
+        state.error = action.payload;
       })
       .addCase(addContact.pending, (state) => {
         state.isLoading = true;
@@ -66,11 +68,12 @@ const contactsSlice = createSlice({
       })
       .addCase(addContact.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.error = null;
         state.items.push(action.payload);
       })
       .addCase(addContact.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.error.message;
+        state.error = action.payload;
       })
       .addCase(deleteContact.pending, (state) => {
         state.isLoading = true;
@@ -78,15 +81,14 @@ const contactsSlice = createSlice({
       })
       .addCase(deleteContact.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.error = null;
         state.items = state.items.filter((contact) => contact.id !== action.payload);
       })
       .addCase(deleteContact.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.error.message;
+        state.error = action.payload;
       });
   },
 });
-
-export const { setFilter } = contactsSlice.actions;
 
 export default contactsSlice.reducer;
