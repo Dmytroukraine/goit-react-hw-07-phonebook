@@ -7,8 +7,9 @@ import { deleteContactsThunk } from '../../redux/contacts/contacts-thunk';
 const ContactItem = ({ name, number, id }) => {
   const dispatch = useDispatch();
 
-  const deleteContact = (contactId) => {
-    dispatch(deleteContactsThunk(contactId));
+  const deleteContact = id => {
+    console.log(id);
+    dispatch(deleteContactsThunk(id));
   };
 
   return (
@@ -29,7 +30,7 @@ const ContactItem = ({ name, number, id }) => {
 ContactItem.propTypes = {
   name: PropTypes.string.isRequired,
   number: PropTypes.string.isRequired,
-  id: PropTypes.string.isRequired,
+  id: PropTypes.string,
 };
 
 export default ContactItem;
