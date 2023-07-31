@@ -1,71 +1,91 @@
-import React, { useState } from 'react';
-import css from './ContactForm.module.css';
-import { addContact } from 'redux/contacts/contacts-operations';
-
+import { useEffect, useState } from 'react';
+import style from './ContactForm.module.css';
 import { useDispatch, useSelector } from 'react-redux';
-import { selectContacts } from 'redux/contacts/contacts-selectors';
+import { selectContacts } from '../../redux/contacts/contacts-selectors';
+import {
+  addContactsThunk,
+  getContactsThunk,
+} from 'redux/contacts/contacts-thunk';
 
 const ContactForm = () => {
-  const dispatch = useDispatch();
-
   const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [number, setNumber] = useState('');
+
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(getContactsThunk());
+  }, [dispatch]);
+
+  const handleChange = e => {
+    const { name, value } = e.currentTarget;
+    switch (name) {
+      case 'name':
+        setName(value);
+        break;
+      case 'number':
+        setNumber(value);
+        break;
+      default:
+    }
+  };
 
   const contacts = useSelector(selectContacts);
 
-  const handleSubmit = event => {
-    event.preventDefault();
+  const handleSubmit = e => {
+    e.preventDefault();
 
-    const isContactExist = contacts.find(
-      contact => contact.name.toLowerCase() === name.toLowerCase()
-    );
-    if (isContactExist) {
-      alert(`User with name ${name} is already in contacts`);
-      return;
+    const newContacts = {
+      name: name,
+      number: number,
+    };
+
+    if (
+      contacts.some(
+        contact =>
+          contact.name.toLowerCase().trim() === name.toLowerCase().trim()
+      )
+    ) {
+      return alert(`${name} is already in contacts`);
     }
-
-    dispatch(addContact({ name, phone }));
-
+    dispatch(addContactsThunk(newContacts));
     setName('');
-    setPhone('');
+    setNumber('');
   };
 
   return (
-    <form onSubmit={handleSubmit} className={css.form}>
-      <label className={css.label} htmlFor="name">
-        Name
-      </label>
-      <input
-        className={css.input}
-        type="text"
-        name="name"
-        pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
-        title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
-        required
-        value={name}
-        onChange={event => setName(event.target.value)}
-      />
-      <label className={css.label} htmlFor="number">
-        Number
-      </label>
-      <input
-        className={css.input}
-        type="tel"
-        name="phone"
-        pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
-        title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
-        required
-        value={phone}
-        onChange={event => setPhone(event.target.value)}
-      />
-      <button type="submit" className={css.submit_btn}>
+    <div className={style.form}>
+      <form onSubmit={handleSubmit}>
+        <label className={style.label}>Name</label>
+        <input
+          className={style.input}
+          type="text"
+          name="name"
+          value={name}
+          onChange={handleChange}
+          pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
+          title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
+          required
+        />
+        <label className={style.label}>Number</label>
+        <input
+          className={style.input}
+          type="tel"
+          name="number"
+          value={number}
+          onChange={handleChange}
+          pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
+          title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
+          required
+        />
+        <button type="submit" className={style.submit_btn}>
         <span></span>
         <span></span>
         <span></span>
         <span></span>
-        Add Contact
+        Add contact
       </button>
-    </form>
+      </form>
+    </div>
   );
 };
 
