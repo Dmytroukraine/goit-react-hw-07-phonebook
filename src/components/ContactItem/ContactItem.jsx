@@ -8,7 +8,7 @@ const ContactItem = ({ name, number, id }) => {
   const dispatch = useDispatch();
 
   const deleteContact = id => {
-    console.log(id);
+    
     dispatch(deleteContactsThunk(id));
   };
 
