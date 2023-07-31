@@ -1,86 +1,69 @@
-// ContactForm.jsx
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { addContact } from '../Redux/contacts/contacts-operations';
-import { nanoid } from 'nanoid';
+import css from './ContactForm.module.css';
+import { addContact } from 'redux/contacts/contacts-operations';
 
-import style from './ContactForm.module.css';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectContacts } from 'redux/contacts/contacts-selectors';
 
 const ContactForm = () => {
-  const [name, setName] = useState('');
-  const [number, setNumber] = useState('');
   const dispatch = useDispatch();
 
-  const handleChange = (event) => {
-    const { name, value } = event.currentTarget;
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
 
-    if (name === 'number' && !/^[0-9\s()+-]*$/.test(value)) {
-      alert('Введіть лише цифри, символи та пробіл!');
+  const contacts = useSelector(selectContacts);
+
+  const handleSubmit = event => {
+    event.preventDefault();
+
+    const isContactExist = contacts.find(
+      contact => contact.name.toLowerCase() === name.toLowerCase()
+    );
+    if (isContactExist) {
+      alert(`User with name ${name} is already in contacts`);
       return;
     }
 
-    if (name === 'name') {
-      setName(value);
-    } else if (name === 'number') {
-      setNumber(value);
-    }
-  };
+    dispatch(addContact({ name, phone }));
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-
-    const newContact = {
-      id: nanoid(),
-      name,
-      number,
-    };
-
-    dispatch(addContact(newContact));
-    reset();
-  };
-
-  const reset = () => {
     setName('');
-    setNumber('');
+    setPhone('');
   };
 
   return (
-    <form onSubmit={handleSubmit} className={style.form}>
-      <label className={style.label}>
+    <form onSubmit={handleSubmit} className={css.form}>
+      <label className={css.label} htmlFor="name">
         Name
-        <input
-          type="text"
-          name="name"
-          className={style.input}
-          pattern="^[a-zA-Zа-яА-Я]+([' -][a-zA-Zа-яА-Я]*)*$"
-          title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
-          required
-          onChange={handleChange}
-          value={name}
-          autoFocus
-        />
       </label>
-
-      <label className={style.label}>
+      <input
+        className={css.input}
+        type="text"
+        name="name"
+        pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
+        title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
+        required
+        value={name}
+        onChange={event => setName(event.target.value)}
+      />
+      <label className={css.label} htmlFor="number">
         Number
-        <input
-          type="tel"
-          name="number"
-          className={style.input}
-          pattern="[0-9\s()+-]*"
-          title="Phone number must contain only digits, symbols (+, -, (, ), space)"
-          required
-          onChange={handleChange}
-          value={number}
-        />
       </label>
-
-      <button type="submit" className={style.submit_btn}>
+      <input
+        className={css.input}
+        type="tel"
+        name="phone"
+        pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
+        title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
+        required
+        value={phone}
+        onChange={event => setPhone(event.target.value)}
+      />
+      <button type="submit" className={css.submit_btn}>
         <span></span>
         <span></span>
         <span></span>
         <span></span>
-        Add contact
+        Add Contact
       </button>
     </form>
   );

@@ -1,30 +1,38 @@
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { setFilter } from '../Redux/filter/filter-slice';
-import style from './Filter.module.css';
+import css from './Filter.module.css';
+import { useDispatch } from 'react-redux';
+import { setFilter } from 'redux/filter/filter-slice';
+import { useSelector } from 'react-redux';
+import { selectFilter } from 'redux/filter/filter-selectors';
 
 const Filter = () => {
   const dispatch = useDispatch();
-  const filter = useSelector((state) => state.filter);
+  const filter = useSelector(selectFilter);
 
-  const handleChange = (event) => {
-    dispatch(setFilter(event.currentTarget.value));
+  const onSetFilter = payload => {
+    dispatch(setFilter(payload));
+  };
+
+  const updateFilter = event => {
+    onSetFilter(event.target.value);
   };
 
   return (
-    <div className={style.searchContainer}>
-      <label className={style.search}>
+    <div className={css.search}>
+      <label className={css.label} htmlFor="filter">
+        Find contacts by name
+      </label>
+      <div className={css.searchContainer}>
         <input
+          className={css.filterInput}
           type="text"
           name="filter"
-          placeholder=" "
-          className={style.inputName}
-          title="Enter search name"
-          onChange={handleChange}
+          onChange={updateFilter}
           value={filter}
+          placeholder="Search..."
         />
         <button type="reset"></button>
-      </label>
+      </div>
     </div>
   );
 };
